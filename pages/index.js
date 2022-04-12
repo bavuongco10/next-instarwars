@@ -32,6 +32,7 @@ const useQuotes = () => {
     commentCount: faker.datatype.number(),
     description: trim(nth(splitQuote(item.content), 0)),
     time: formatDistanceToNow(new Date()),
+    isStarWars: true,
   }));
 
   return { quotes: mappedData };
@@ -66,7 +67,7 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/stories')
+    fetch('api/star-wars/peoples')
       .then((response) => response.json())
       .then((data) => setStories(data));
   }, []);

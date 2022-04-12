@@ -27,7 +27,6 @@ const fetchQuote = async () => {
 const handler = nc().get(async (req, res) => {
   try {
     const data = await Promise.all(times(10, fetchQuote));
-    console.log(data);
     return res.send(data);
   } catch (err) {
     console.log('=========================================');

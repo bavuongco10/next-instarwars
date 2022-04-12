@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Router from 'next/router';
-import { map } from 'lodash';
+import { map, nth, split } from 'lodash';
+import axios from 'axios';
 
 import Box from '../Box';
 import AddComment from '../AddComment';
@@ -14,26 +15,42 @@ import useModalState from 'hooks/useModalState';
 
 export default function FeedItem({ data }) {
   const { setModal } = useModalState();
+  const [starWarPeople, setStarWarPeople] = useState();
+  const { image } = data.user;
+  const { username } = data.user;
+  const { isStarWars, photos } = data;
+  const currentUserImage = starWarPeople?.userImage || image;
+  const currentPhotos = starWarPeople?.photos || photos;
+
+  useEffect(() => {
+    if (isStarWars)
+      axios({
+        url: '/api/star-wars/people',
+        method: 'GET',
+        params: {
+          // Only search by surename due to the api
+          search: nth(split(username, ' '), 1) || nth(split(username, ' '), 0),
+        },
+      }).then((res) => setStarWarPeople(res.data));
+  }, [isStarWars, username]);
 
   const moreClickEvent = () => {
     setModal(true, data);
   };
+
   return (
     <Box className="feed-item-container flex flex-col">
       <FeedItemHeader
-        image={data.user.image}
-        username={data.user.username}
-        data={data}
+        image={currentUserImage}
+        username={username}
         moreClickEvent={moreClickEvent}
       />
-      <FeedItemPhotos photos={data.photos} />
+      <FeedItemPhotos photos={currentPhotos} />
       <FeedItemButtons className="feed-item-buttons-container w-full h-10 pl-2 pr-2 mt-2 flex items-center" />
       <a href="#" className="feed-item-text text-14-bold mr-1 ml-4">
         {data?.likeCount || '0'} likes
       </a>
-      <FeedItemComment
-        data={{ username: data.user.username, description: data.description }}
-      />
+      <FeedItemComment data={{ username, description: data.description }} />
       <a
         className="overflow-hidden mx-4 text-14-light cursor-pointer"
         style={{ color: '#9a9a9a', display: 'flex' }}
